@@ -1,6 +1,6 @@
 'use client'
 
-import { Container, Nav, Navbar, NavDropdown, Button } from 'react-bootstrap';
+import { Container, Nav, Navbar, NavDropdown} from 'react-bootstrap';
 import { FaHome, FaGlobe, FaCog } from 'react-icons/fa';
 
 export default function Pagina({ titulo, children }) {

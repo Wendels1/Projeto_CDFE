@@ -52,7 +52,7 @@ export default function CadastroRelacao() {
     alert("Relação entre cliente e destino cadastrada com sucesso!")
 
     // Redireciona para a página de listagem
-    router.push('/resrvas')
+    router.push('/reservas')
   }
 
   return (

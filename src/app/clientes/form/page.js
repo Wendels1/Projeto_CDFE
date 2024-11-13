@@ -12,38 +12,35 @@ import Pagina from '@/app/components/Pagina'
 import ReactInputMask from 'react-input-mask'
 
 
-
 export default function ClienteFormPage() {
-
+  const router = useRouter()
   const searchParams = useSearchParams() // Obtendo parâmetros da URL
   const id = searchParams.get('id') // Pegando o ID do cliente para edição
 
-
-  const router = useRouter() // Hook para navegação
-
+  const [clientes, setClientes] = useState([]) // Estado para armazenar lista de clientes
   const [estados, setEstados] = useState([])  // Estado para armazenar lista de estados
   const [cidades, setCidades] = useState([]) // Estado para armazenar lista de cidades
-
-
+  
   // Simulando dados de clientes do localStorage
-  const clientes = JSON.parse(localStorage.getItem('clientes')) || []
+  useEffect(() => {
+    const clientesSalvos = JSON.parse(localStorage.getItem('clientes')) || []
+    setClientes(clientesSalvos)
+    setEstados([
+      { sigla: 'SP', nome: 'São Paulo' },
+      { sigla: 'RJ', nome: 'Rio de Janeiro' },
+      { sigla: 'MG', nome: 'Minas Gerais' },
+      { sigla: 'BA', nome: 'Bahia' },
+      { sigla: 'RS', nome: 'Rio Grande do Sul' },
+      { sigla: 'PR', nome: 'Paraná' },
+      { sigla: 'PE', nome: 'Pernambuco' },
+      { sigla: 'CE', nome: 'Ceará' },
+      { sigla: 'SC', nome: 'Santa Catarina' },
+      { sigla: 'GO', nome: 'Goiás' }
+    ])
+  }, [])
+
   const clienteEditado = clientes.find(item => item.id == id) // Se o ID estiver presente, recupera os dados do cliente para edição
-
-   // Cidades para cada estado (exemplo)
-  const estadosBrasil = [
-    { sigla: 'SP', nome: 'São Paulo' },
-    { sigla: 'RJ', nome: 'Rio de Janeiro' },
-    { sigla: 'MG', nome: 'Minas Gerais' },
-    { sigla: 'BA', nome: 'Bahia' },
-    { sigla: 'RS', nome: 'Rio Grande do Sul' },
-    { sigla: 'PR', nome: 'Paraná' },
-    { sigla: 'PE', nome: 'Pernambuco' },
-    { sigla: 'CE', nome: 'Ceará' },
-    { sigla: 'SC', nome: 'Santa Catarina' },
-    { sigla: 'GO', nome: 'Goiás' }
-  ]
-
-  // Cidades para cada estado (exemplo)
+  
   const cidadesPorEstado = {
     SP: ['São Paulo', 'Campinas', 'Sorocaba'],
     RJ: ['Rio de Janeiro', 'Niterói', 'Campos'],
@@ -57,32 +54,24 @@ export default function ClienteFormPage() {
     GO: ['Goiânia', 'Anápolis', 'Rio Verde']
   }
 
-  useEffect(() => {
-    // Inicializando a lista de estados assim que o componente é montado
-    setEstados(estadosBrasil)
-  }, [])
-
-  // Função para atualizar as cidades conforme o estado selecionado
   const handleEstadoChange = (estadoSigla) => {
     setCidades(cidadesPorEstado[estadoSigla] || [])
   }
 
-   // Função para salvar os dados do cliente no localStorage
   function salvar(dados) {
     if (clienteEditado) {
-      Object.assign(clienteEditado, dados) // Atualiza os dados do cliente se ele já existir
-      localStorage.setItem('clientes', JSON.stringify(clientes))
+      const clientesAtualizados = clientes.map(item => item.id === clienteEditado.id ? { ...item, ...dados } : item)
+      localStorage.setItem('clientes', JSON.stringify(clientesAtualizados))
     } else {
       dados.id = v4() // Gera um ID único para o novo cliente
-      clientes.push(dados) // Adiciona o novo cliente à lista
-      localStorage.setItem('clientes', JSON.stringify(clientes))
+      const novosClientes = [...clientes, dados]
+      localStorage.setItem('clientes', JSON.stringify(novosClientes))
     }
 
-    alert("Cliente salvo com sucesso!") // Mensagem de sucesso
-    router.push("/clientes") // Navega de volta para a lista de clientes
+    alert("Cliente salvo com sucesso!")
+    router.push("/clientes")
   }
 
-    // Valores iniciais do formulário
   const initialValues = {
     nome: '',
     estado: '',
@@ -94,7 +83,6 @@ export default function ClienteFormPage() {
     dataNascimento: ''
   }
 
-  // Validação dos campos utilizando a biblioteca Yup
   const validationSchema = Yup.object().shape({
     nome: Yup.string().required("Campo obrigatório"),
     estado: Yup.string().required("Campo obrigatório"),
@@ -107,9 +95,8 @@ export default function ClienteFormPage() {
   })
 
   return (
-    <Pagina>
+    <Pagina titulo="Cadastro de Clientes">
       <Container className="my-4">
-        {/* Card que contém o formulário */}
         <Card className="p-4 shadow-lg rounded">
           <Card.Body>
             <Formik
@@ -121,7 +108,6 @@ export default function ClienteFormPage() {
                 <Form onSubmit={handleSubmit}>
                   <h3 className="text-center mb-4">Formulário de cadastro de cliente</h3>
 
-                  {/* Nome */}
                   <Row className="mb-3">
                     <Form.Group as={Col} md={6}>
                       <Form.Label>Nome:</Form.Label>
@@ -138,7 +124,6 @@ export default function ClienteFormPage() {
                     </Form.Group>
                   </Row>
 
-                  {/* Estado */}
                   <Row className="mb-3">
                     <Form.Group as={Col} md={6}>
                       <Form.Label>Estado:</Form.Label>
@@ -147,7 +132,7 @@ export default function ClienteFormPage() {
                         value={values.estado}
                         onChange={(e) => {
                           handleChange(e)
-                          handleEstadoChange(e.target.value) // Atualiza as cidades com base no estado selecionado
+                          handleEstadoChange(e.target.value)
                         }}
                         onBlur={handleBlur}
                         isValid={touched.estado && !errors.estado}
@@ -164,7 +149,6 @@ export default function ClienteFormPage() {
                     </Form.Group>
                   </Row>
 
-                  {/* Cidade */}
                   <Row className="mb-3">
                     <Form.Group as={Col} md={6}>
                       <Form.Label>Cidade:</Form.Label>
@@ -187,7 +171,6 @@ export default function ClienteFormPage() {
                     </Form.Group>
                   </Row>
 
-                  {/* Endereço */}
                   <Row className="mb-3">
                     <Form.Group as={Col} md={6}>
                       <Form.Label>Endereço:</Form.Label>
@@ -204,7 +187,6 @@ export default function ClienteFormPage() {
                     </Form.Group>
                   </Row>
 
-                  {/* Telefone */}
                   <Row className="mb-3">
                     <Form.Group as={Col} md={6}>
                       <Form.Label>Telefone:</Form.Label>
@@ -221,7 +203,6 @@ export default function ClienteFormPage() {
                     </Form.Group>
                   </Row>
 
-                  {/* Email */}
                   <Row className="mb-3">
                     <Form.Group as={Col} md={6}>
                       <Form.Label>Email:</Form.Label>
@@ -238,14 +219,11 @@ export default function ClienteFormPage() {
                     </Form.Group>
                   </Row>
 
-                  {/* CPF */}
                   <Row className="mb-3">
                     <Form.Group as={Col} md={6}>
                       <Form.Label>CPF:</Form.Label>
-                      <Form.Control 
-                        //as={ReactInputMask}
+                      <Form.Control //as={ReactInputMask}
                         mask={"999.999-99"}
-                        placeholder='999.999-99'
                         name="cpf"
                         type="text"
                         value={values.cpf}
@@ -258,7 +236,6 @@ export default function ClienteFormPage() {
                     </Form.Group>
                   </Row>
 
-                  {/* Data de Nascimento */}
                   <Row className="mb-3">
                     <Form.Group as={Col} md={6}>
                       <Form.Label>Data de Nascimento:</Form.Label>
@@ -275,11 +252,14 @@ export default function ClienteFormPage() {
                     </Form.Group>
                   </Row>
 
-                  {/* Botões */}
-                  <div className="d-flex justify-content-between">
-                    <Button variant="secondary" onClick={() => router.push('/clientes')}><FaArrowLeft /> Voltar</Button>
-                    <Button variant="primary" type="submit"><FaCheck /> Salvar</Button>
-                  </div>
+                  <Row className="text-center">
+                    <Button type="submit" className="btn btn-success mr-2">
+                      <FaCheck /> Salvar
+                    </Button>
+                    <Button onClick={() => router.push('/clientes')} className="btn btn-secondary">
+                      <FaArrowLeft /> Voltar
+                    </Button>
+                  </Row>
                 </Form>
               )}
             </Formik>
